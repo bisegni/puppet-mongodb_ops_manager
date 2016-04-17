@@ -44,9 +44,8 @@ class mongodb_ops_manager::application_db(
     port    => $port,
     require => Class['::mongodb::globals']
   }
-  
+
   class {'::mongodb::client':
     require => Class['::mongodb::server']
   }
-  
 }

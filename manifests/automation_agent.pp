@@ -22,6 +22,7 @@ class mongodb_ops_manager::automation_agent(
   exec { 'download-mms-automation-agent':
     command => "curl -OL ${mmsBaseUrl}/download/agent/automation/mongodb-mms-automation-agent-manager-${version}.x86_64${platform}.rpm",
     cwd     => '/tmp',
+    path    => '/usr/bin:$PATH',
     creates => "/tmp/mongodb-mms-automation-agent-manager-${version}.x86_64${platform}.rpm",
   }
 
@@ -31,7 +32,7 @@ class mongodb_ops_manager::automation_agent(
     provider => 'rpm',
     require  => Exec['download-mms-automation-agent'],
   }
-  
+
   file { '/etc/mongodb-mms/automation-agent.config':
     content => template('mongodb_ops_manager/automation-agent.config.erb'),
     owner   => 'mongod',
@@ -39,7 +40,7 @@ class mongodb_ops_manager::automation_agent(
     mode    => '0600',
     require => Package['mongodb-mms-automation-agent-manager.x86_64'],
   }
-  
+
   service { 'mongodb-mms-automation-agent':
     ensure    => running,
     enable    => true,
@@ -47,5 +48,5 @@ class mongodb_ops_manager::automation_agent(
     restart   => true,
     require   => File['/etc/mongodb-mms/automation-agent.config']
   }
- 
+
 }
