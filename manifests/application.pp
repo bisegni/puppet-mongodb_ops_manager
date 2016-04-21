@@ -6,7 +6,11 @@
 class mongodb_ops_manager::application (
   $version               = '2.0.1.332-1',
   $https_proxy           = '',
+  $url_prefix            = 'http://',
+  $base_port             = '8080',
+  $base_ssl_port         = '8443',
   $mms_host              = '127.0.0.1',
+  $mms_central_url_port  = '8080',
   $from_email_addr       = 'mms-admin@example.net',
   $reply_to_email_addr   = 'mms-admin@example.net',
   $admin_from_email_addr = 'mms-admin@example.net',
@@ -20,7 +24,10 @@ class mongodb_ops_manager::application (
   $db_host               = '127.0.0.1',
   $db_port               = '27017',
   $user                  = 'mongodb-mms',
-  $group                 = 'mongodb-mms')
+  $group                 = 'mongodb-mms',
+  $pem_key_file          = '',
+  $pem_key_file_password = '',
+  )
 
 {
 
@@ -54,7 +61,18 @@ class mongodb_ops_manager::application (
     group   => $group,
     mode    => '0755',
     content => template('mongodb_ops_manager/conf-mms.properties.erb'),
-    require => Exec["rpm --install /tmp/mongodb-mms-${version}.x86_64.rpm"]
+    require => Exec["rpm --install /tmp/mongodb-mms-${version}.x86_64.rpm"],
+    notify  => Service['mongodb-mms']
+  }
+
+  file { '/opt/mongodb/mms/conf/mms.conf':
+    ensure  => file,
+    owner   => $user,
+    group   => $group,
+    mode    => '0755',
+    content => template('mongodb_ops_manager/mms.conf.erb'),
+    require => Exec["rpm --install /tmp/mongodb-mms-${version}.x86_64.rpm"],
+    notify  => Service['mongodb-mms']
   }
 
   if ($operatingsystemrelease =~ /^7.1/) or ($operatingsystemrelease =~ /^7.2/) {
